@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -25,9 +26,12 @@ namespace TypingGameUI
             InitializeComponent();
         }
 
+        TextManager tm = new TextManager();
+
         public void NewText(string text)
         {
-            List<string> textList = new List<string>(){"abc", "def", "ghk"};
+            tm.SetText(text);
+            List<string> textList = tm.SplitText(40);
             mainTextBox.Items.Clear();
             foreach (string sLine in textList)
             {
@@ -42,7 +46,11 @@ namespace TypingGameUI
 
         private void NewTextButton_Click(object sender, RoutedEventArgs e)
         {
-            NewText("my text\n2nd line\n 3rd line");
+            using(StreamReader sr = new StreamReader(@"..\..\..\TextFiles\TextFile.txt"))
+            {
+                string text = sr.ReadToEnd();
+                NewText(text);
+            }
         }
 
         private void enterTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -85,6 +93,35 @@ namespace TypingGameUI
                 }
                 m_bEditing = false;
             }
+        }
+
+        private void enterTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            Debug.WriteLine(e.ToString());
+            switch(e.Key)
+            {
+                case Key.Down:
+                case Key.Up:
+                case Key.Left:
+                case Key.Right:
+                    e.Handled = true;
+                    break;
+                case Key.Return:
+                case Key.Back:
+                    // handle possible line down and line up
+                    e.Handled = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void enterTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            Debug.WriteLine(e.ToString());
+            string systemText = e.SystemText;
+            string text = e.Text;
+            string controlText = e.ControlText;
         }
     }
 }

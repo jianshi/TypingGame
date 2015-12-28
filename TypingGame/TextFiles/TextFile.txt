@@ -1,0 +1,4 @@
+named TestFile.txt is in the same folder as the application.
+These code examples do not apply developing for Windows Store Apps because the Windows Runtime provides 
+
+different streams types reading and writing to files. For an example that shows how 

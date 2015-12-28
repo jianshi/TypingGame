@@ -10,6 +10,8 @@
                 Name="enterTextBox"
                 KeyDown="enterTextBox_KeyDown"
                 TextChanged="enterTextBox_TextChanged"
+                PreviewKeyDown="enterTextBox_PreviewKeyDown"
+                PreviewTextInput="enterTextBox_PreviewTextInput"
                 >
                 <FlowDocument Name="flowDoc" PageWidth="{Binding ElementName=enterTextBox, Path=ActualWidth}" />
             </RichTextBox>
