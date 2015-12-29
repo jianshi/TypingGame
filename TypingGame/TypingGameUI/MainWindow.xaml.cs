@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace TypingGameUI
 {
@@ -94,15 +96,14 @@ namespace TypingGameUI
             {
                 enterTextBox.PreviewKeyDown += enterTextBox_PreviewKeyDown;
                 enterTextBox.TextChanged += enterTextBox_TextChanged;
-                enterTextBox.Focusable = true;
-                //Keyboard.Focus(enterTextBox);
-                //enterTextBox.Focus();
+                // set keyboard focus to this text input box
+                FocusOnNewLine_AsyncThread();
             }
         }
 
         void tm_TextChanged(object sender, EventArgs e)
         {
-            List<string> textList = tm.SplitText(80);
+            List<string> textList = tm.SplitText(5);
             mainTextBox.Items.Clear();
             foreach(string sLine in textList)
             {
@@ -217,7 +218,14 @@ namespace TypingGameUI
                         FontWeights.Normal);
                 }
                 m_bEditing = false;
-                tm.AddCharacter(position);
+                if(position > 0)
+                {
+                    tm.AddCharacter(position);
+                }
+                else
+                {
+                    tm.RemoveCharacter(0);
+                }
             }
         }
 
@@ -237,10 +245,10 @@ namespace TypingGameUI
                     tm.AddReturn();
                     e.Handled = true;
                     break;
-                case Key.Back:
-                   tm.RemoveCharacter(0);
-                    e.Handled = true;
-                    break;
+                //case Key.Back:
+                //   tm.RemoveCharacter(0);
+                //    e.Handled = true;
+                //    break;
                 default:
                     break;
             }
@@ -255,5 +263,23 @@ namespace TypingGameUI
         }
 
         private RichTextBox enterTextBox = null;
+
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(enterTextBox != null)
+            {
+                enterTextBox.Focus();
+            }
+        }
+
+        private void FocusOnNewLine_AsyncThread()
+        {
+            if(enterTextBox != null)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                    (ThreadStart)delegate { enterTextBox.Focus(); }
+                    );
+            }
+        }
     }
 }

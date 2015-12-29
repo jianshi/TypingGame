@@ -3,7 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
     <DockPanel LastChildFill="True">
-        <Button Name="NewTextButton" Click="NewTextButton_Click" DockPanel.Dock="Top">New Text</Button>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+            <Button Name="NewTextButton" Click="NewTextButton_Click">New Text</Button>
+            <Button Name="TestButton" Click="TestButton_Click">Test</Button>
+        </StackPanel>
         <ListBox Name="mainTextBox">
             <TextBlock>Abc</TextBlock>
             <!--<RichTextBox

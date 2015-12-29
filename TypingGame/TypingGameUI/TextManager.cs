@@ -59,7 +59,7 @@ namespace TypingGameUI
 
         public void AddCharacter(int columnNumber)
         {
-            if(columnNumber >= m_nCharPerLine - 1)
+            if(columnNumber >= m_nCharPerLine)
             {
                 MoveToNext();
             }
