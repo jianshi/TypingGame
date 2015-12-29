@@ -24,32 +24,153 @@ namespace TypingGameUI
         public MainWindow()
         {
             InitializeComponent();
+            tm.TextChanged += new EventHandler(tm_TextChanged);
+            tm.LineChanged += new LineChangedEventHandler(tm_LineChanged);
+        }
+
+        void tm_LineChanged(object sender, LineChangedEventArgs e)
+        {
+            // move the enterTextBox to new location, set view location
+            Debug.Assert(e != null);
+            int nOldIndex = e.nOldLineNumber;
+            int nNewIndex = e.nNewLineNumber;
+
+            if(nNewIndex < nOldIndex)
+            {
+                // move up one line
+                LineNumberMoveUp(nNewIndex);
+            }
+            else if(nNewIndex > nOldIndex)
+            {
+                // move down one line
+                LineNumberMoveDown(nNewIndex);
+            }
+            else
+            {
+                // same line, no change
+                LineNumberShow(nNewIndex);
+            }
+
+            SetCurrentLineNumber(nNewIndex);
+        }
+
+        private void LineNumberMoveUp(int nLineNumber)
+        {
+            ShowHideTextEntry(nLineNumber + 2, false);
+            LineNumberShow(nLineNumber);
+
+            // move cursor to end of current line
+        }
+
+        private void LineNumberMoveDown(int nLineNumber)
+        {
+            ShowHideTextEntry(nLineNumber - 2, false);
+            LineNumberShow(nLineNumber);
+        }
+
+        private void LineNumberShow(int nLineNumber)
+        {
+            for(int i = nLineNumber - 1; i <= nLineNumber + 1; i++)
+            {
+                ShowHideTextEntry(i, true);
+            }
+        }
+
+        private void SetCurrentLineNumber(int nLineNumber)
+        {
+            // unsubscribe events from current line
+            if(enterTextBox != null)
+            {
+                enterTextBox.PreviewKeyDown -= enterTextBox_PreviewKeyDown;
+                enterTextBox.TextChanged -= enterTextBox_TextChanged;
+            }
+
+            if(nLineNumber >= 0 && nLineNumber < textInfoList.Count)
+            {
+                enterTextBox = textInfoList[nLineNumber].textEntry;
+            }
+
+            if(enterTextBox != null)
+            {
+                enterTextBox.PreviewKeyDown += enterTextBox_PreviewKeyDown;
+                enterTextBox.TextChanged += enterTextBox_TextChanged;
+                enterTextBox.Focusable = true;
+                //Keyboard.Focus(enterTextBox);
+                //enterTextBox.Focus();
+            }
+        }
+
+        void tm_TextChanged(object sender, EventArgs e)
+        {
+            List<string> textList = tm.SplitText(80);
+            mainTextBox.Items.Clear();
+            foreach(string sLine in textList)
+            {
+                LineDisplayInfo lineDisplayInfo = new LineDisplayInfo();
+                TextBlock textBlock = lineDisplayInfo.textDisplay;
+                textBlock.Text = sLine;
+                mainTextBox.Items.Add(textBlock);
+                textInfoList.Add(lineDisplayInfo);
+            }
+
+            int nCurrentLine = tm.nCurrentLineNumber;
+            LineNumberShow(nCurrentLine);
+            SetCurrentLineNumber(nCurrentLine);
+        }
+
+        private void ShowHideTextEntry(int nLineNumber, bool bShow)
+        {
+            // show or hide the text entry at nLineNumber
+            // the list view has mixture of text display and text entry, need to find out the index of this text entry
+            // to show: insert into the list
+            // to hide: remove from the list
+
+            if((nLineNumber < 0) || (nLineNumber >= textInfoList.Count))
+                return;
+
+            LineDisplayInfo lineDisplayInfo = textInfoList[nLineNumber];
+            if(lineDisplayInfo.bTextEntryVisible != bShow)
+            {
+                // count all text entries before this line, not including this line
+                int nVisibleTextEntryBefore = 0;
+                for (int i = 0; i < nLineNumber; i++)
+                {
+                    if (textInfoList[i].bTextEntryVisible)
+                    {
+                        nVisibleTextEntryBefore++;
+                    }
+                }
+
+                // count all text displays including this line
+                int nVisibleTextDisplayBefore = nLineNumber + 1;
+
+                int nIndexInListView = nVisibleTextDisplayBefore + nVisibleTextEntryBefore;
+                if(bShow)
+                {
+                    lineDisplayInfo.textEntry.Width = mainTextBox.ActualWidth - 30;
+                    mainTextBox.Items.Insert(nIndexInListView, lineDisplayInfo.textEntry);
+                }
+                else
+                {
+                    RichTextBox richTextBox = mainTextBox.Items[nIndexInListView] as RichTextBox;
+                    Debug.Assert(richTextBox != null);
+                    mainTextBox.Items.RemoveAt(nIndexInListView);
+                }
+                lineDisplayInfo.bTextEntryVisible = bShow;
+            }
         }
 
         TextManager tm = new TextManager();
-
-        public void NewText(string text)
-        {
-            tm.SetText(text);
-            List<string> textList = tm.SplitText(40);
-            mainTextBox.Items.Clear();
-            foreach (string sLine in textList)
-            {
-                TextBlock textBlock = new TextBlock();
-                textBlock.Text = sLine;
-                mainTextBox.Items.Add(textBlock);
-            }
-            enterTextBox.Width = mainTextBox.ActualWidth;
-//            rtbFlowDoc.PageWidth = mainTextBox.Width;
-            mainTextBox.Items.Insert(1, enterTextBox);
-        }
+        List<LineDisplayInfo> textInfoList = new List<LineDisplayInfo>();
+        List<TextBlock> textDisplayList = new List<TextBlock>();
+        List<RichTextBox> textEntryList = new List<RichTextBox>();
 
         private void NewTextButton_Click(object sender, RoutedEventArgs e)
         {
             using(StreamReader sr = new StreamReader(@"..\..\..\TextFiles\TextFile.txt"))
             {
                 string text = sr.ReadToEnd();
-                NewText(text);
+                tm.SetText(text);
             }
         }
 
@@ -61,6 +182,8 @@ namespace TypingGameUI
         private bool m_bEditing = false;
         private void enterTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            Debug.Assert(sender == enterTextBox);
+            FlowDocument flowDoc = enterTextBox.Document;
             int offset = -2;
             Debug.WriteLine(e.ToString());
             if(!m_bEditing && flowDoc != null && flowDoc.Blocks != null && flowDoc.Blocks.FirstBlock != null)
@@ -73,7 +196,9 @@ namespace TypingGameUI
                 var lastCharEndPos = end.GetPositionAtOffset(offset);
                 var lastCharRange = new TextRange(lastCharStartPos, lastCharEndPos);
                 var totalTextRange = new TextRange(start, end);
-                int position = totalTextRange.Text.Length;
+
+                // last two characters are \r\n
+                int position = totalTextRange.Text.Length - 2;
 
                 if( (position - position / 2 * 2) == 0)
                 {
@@ -92,6 +217,7 @@ namespace TypingGameUI
                         FontWeights.Normal);
                 }
                 m_bEditing = false;
+                tm.AddCharacter(position);
             }
         }
 
@@ -104,11 +230,15 @@ namespace TypingGameUI
                 case Key.Up:
                 case Key.Left:
                 case Key.Right:
+                    // Ignore arrow keys
                     e.Handled = true;
                     break;
                 case Key.Return:
+                    tm.AddReturn();
+                    e.Handled = true;
+                    break;
                 case Key.Back:
-                    // handle possible line down and line up
+                   tm.RemoveCharacter(0);
                     e.Handled = true;
                     break;
                 default:
@@ -123,5 +253,7 @@ namespace TypingGameUI
             string text = e.Text;
             string controlText = e.ControlText;
         }
+
+        private RichTextBox enterTextBox = null;
     }
 }

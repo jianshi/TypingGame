@@ -6,7 +6,7 @@
         <Button Name="NewTextButton" Click="NewTextButton_Click" DockPanel.Dock="Top">New Text</Button>
         <ListBox Name="mainTextBox">
             <TextBlock>Abc</TextBlock>
-            <RichTextBox
+            <!--<RichTextBox
                 Name="enterTextBox"
                 KeyDown="enterTextBox_KeyDown"
                 TextChanged="enterTextBox_TextChanged"
@@ -14,28 +14,7 @@
                 PreviewTextInput="enterTextBox_PreviewTextInput"
                 >
                 <FlowDocument Name="flowDoc" PageWidth="{Binding ElementName=enterTextBox, Path=ActualWidth}" />
-            </RichTextBox>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
-            <TextBlock>DEF</TextBlock>
+            </RichTextBox>-->
         </ListBox>
     </DockPanel>
 </Window>

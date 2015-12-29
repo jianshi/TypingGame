@@ -6,18 +6,98 @@ using System.Text;
 
 namespace TypingGameUI
 {
+    // A delegate type for hooking up change notifications.
+    public delegate void LineChangedEventHandler(object sender, LineChangedEventArgs e);
+
     class TextManager
     {
+        #region public events
+
+        public event EventHandler TextChanged;
+
+        protected virtual void OnTextChanged(EventArgs e)
+        {
+            if(TextChanged != null)
+            {
+                TextChanged(this, e);
+            }
+        }
+
+        public event LineChangedEventHandler LineChanged;
+
+        protected virtual void OnLineChanged(LineChangedEventArgs e)
+        {
+            if(LineChanged != null)
+            {
+                LineChanged(this, e);
+            }
+        }
+        #endregion
+
         public void SetText(string text)
         {
             Debug.Assert(text != null);
             m_sText = text;
+            m_currentLineNumber = 0;
+            OnTextChanged(new EventArgs());
         }
 
         public List<string> SplitText(int nCharPerLine)
         {
+            m_nCharPerLine = nCharPerLine;
             m_textList = SplitText(m_sText, nCharPerLine);
             return m_textList;
+        }
+
+        public int nCurrentLineNumber
+        {
+            get
+            {
+                return m_currentLineNumber;
+            }
+        }
+
+        public void AddCharacter(int columnNumber)
+        {
+            if(columnNumber >= m_nCharPerLine - 1)
+            {
+                MoveToNext();
+            }
+        }
+
+        public void RemoveCharacter(int columnNumber)
+        {
+            if(columnNumber <= 0)
+            {
+                MoveToPrev();
+            }
+        }
+
+        public void AddReturn()
+        {
+            MoveToNext();
+        }
+
+        private void MoveToPrev()
+        {
+            if(m_currentLineNumber > 0)
+            {
+                LineChangedEventArgs lineChangedEventArgs = new LineChangedEventArgs();
+                lineChangedEventArgs.nOldLineNumber = m_currentLineNumber;
+                lineChangedEventArgs.nNewLineNumber = --m_currentLineNumber;
+                OnLineChanged(lineChangedEventArgs);
+            }
+        }
+
+        private void MoveToNext()
+        {
+            if(m_currentLineNumber < m_textList.Count - 1)
+            {
+                LineChangedEventArgs lineChangedEventArgs = new LineChangedEventArgs();
+                lineChangedEventArgs.nOldLineNumber = m_currentLineNumber;
+                lineChangedEventArgs.nNewLineNumber = ++m_currentLineNumber;
+                OnLineChanged(lineChangedEventArgs);
+            }
         }
 
         private List<string> SplitText(string text, int nCharPerLine)
@@ -61,5 +141,7 @@ namespace TypingGameUI
         private string[] m_separator_LF_CR = new string[] { "\r\n", "\n", "\r" };
         private string m_sText;
         private List<string> m_textList;
+        private int m_currentLineNumber = 0;
+        private int m_nCharPerLine = 80;
     }
 }
