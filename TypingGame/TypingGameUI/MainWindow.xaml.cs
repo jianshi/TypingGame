@@ -103,7 +103,7 @@ namespace TypingGameUI
 
         void tm_TextChanged(object sender, EventArgs e)
         {
-            List<string> textList = tm.SplitText(5);
+            List<string> textList = tm.SplitText(80);
             mainTextBox.Items.Clear();
             foreach(string sLine in textList)
             {
