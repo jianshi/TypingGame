@@ -8,16 +8,6 @@
             <Button Name="TestButton" Click="TestButton_Click">Test</Button>
         </StackPanel>
         <ListBox Name="mainTextBox">
-            <TextBlock>Abc</TextBlock>
-            <!--<RichTextBox
-                Name="enterTextBox"
-                KeyDown="enterTextBox_KeyDown"
-                TextChanged="enterTextBox_TextChanged"
-                PreviewKeyDown="enterTextBox_PreviewKeyDown"
-                PreviewTextInput="enterTextBox_PreviewTextInput"
-                >
-                <FlowDocument Name="flowDoc" PageWidth="{Binding ElementName=enterTextBox, Path=ActualWidth}" />
-            </RichTextBox>-->
         </ListBox>
     </DockPanel>
 </Window>

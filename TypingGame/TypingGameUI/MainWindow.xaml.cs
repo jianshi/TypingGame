@@ -277,8 +277,37 @@ namespace TypingGameUI
             if(enterTextBox != null)
             {
                 Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                    (ThreadStart)delegate { enterTextBox.Focus(); }
+                    (ThreadStart)delegate { FocusOnNewLine(); }
                     );
+            }
+        }
+
+        private void FocusOnNewLine()
+        {
+            if(enterTextBox != null)
+            {
+                enterTextBox.Focus();
+                CenterAtNewLine();
+            }
+        }
+
+        private void CenterAtNewLine()
+        {
+            // Get the border of the listview (first child of a listview)
+            Decorator border = VisualTreeHelper.GetChild(mainTextBox, 0) as Decorator;
+            if(border != null)
+            {
+                // Get scrollviewer
+                ScrollViewer scrollViewer = border.Child as ScrollViewer;
+                if(scrollViewer != null)
+                {
+                    // center the Scroll Viewer...
+                    int nCurrentLine = tm.nCurrentLineNumber;
+                    int nTotalLines = textInfoList.Count;
+                    double percent = (double)nCurrentLine / nTotalLines;
+                    double center = scrollViewer.ScrollableHeight * percent;
+                    scrollViewer.ScrollToVerticalOffset(center);
+                }
             }
         }
     }
